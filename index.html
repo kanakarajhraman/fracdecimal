@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fraction Visualizer - Code 8</title>
+    <title>Fraction Visualizer - Code 9</title>
     <style>
         :root {
             --primary: #2563eb; /* Color for Numerator */
@@ -376,7 +376,7 @@
         let html = `
             <div class="method-box">
                 <h3>Method 1: Direct Division</h3>
-                <div class="step">Divide numerator by denominator: ${getFracHTML(n, d)} ➔ ${n} ÷ ${d} = <b>${dec.toFixed(4).replace(/\.?0+$/, '')}</b></div>
+                <div class="step">Divide numerator by denominator: ${getFracHTML(n, d)} = ${n} ÷ ${d} = <b>${dec.toFixed(4).replace(/\.?0+$/, '')}</b></div>
                 <div class="step">Multiply by 100 to get percentage: ${dec.toFixed(4).replace(/\.?0+$/, '')} × 100 = <b>${per.toFixed(2).replace(/\.?0+$/, '')}%</b></div>
             </div>
             <div class="method-box">
@@ -388,11 +388,11 @@
                             <div class="frac-num">${n} × ${scaleFactor}</div>
                             <div class="frac-den">${d} × ${scaleFactor}</div>
                         </div>
-                        <span class="math-symbol">➔</span>
+                        <span class="math-symbol">=</span>
                         ${getFracHTML(newNum, 100)}
                     </div>
                 </div>
-                <div class="step">Since it is now "per hundred", the value is <b>${newNum}%</b></div>
+                <div class="step">Since it is now "per hundred", the value = <b>${newNum}%</b></div>
             </div>
         `;
         stepsContent.innerHTML = html;
