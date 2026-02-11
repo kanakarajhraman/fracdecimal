@@ -1,23 +1,414 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Home</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <!--
-      Need a visual blank slate?
-      Remove all code in `styles.css`!
-    -->
-    <link rel="stylesheet" href="styles.css" />
-    <script type="module" src="script.js"></script>
-  </head>
-  <body>
-    <nav>
-      <a href="/" aria-current="page">Home</a>
-      <a href="/page2.html">Other page</a>
-    </nav>
-    <main>
-      <h1>Home page</h1>
-    </main>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraction Visualizer - Code 8</title>
+    <style>
+        :root {
+            --primary: #2563eb; /* Color for Numerator */
+            --secondary: #e2e8f0; /* Color for Remaining Parts */
+            --partition-line: #0f172a; 
+            --primary-light: #dbeafe;
+            --success: #059669;
+            --error: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border: #e2e8f0;
+            --grid-line: #000000; /* Black grid lines */
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 850px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid var(--border);
+        }
+
+        h1, h2 { margin-top: 0; color: var(--text-main); }
+        h3 { margin-bottom: 10px; font-size: 1.1rem; border-bottom: 2px solid var(--primary-light); display: inline-block;}
+        p { line-height: 1.5; color: #64748b; }
+
+        /* Fraction CSS Component */
+        .math-frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            margin: 0 4px;
+            line-height: 1;
+        }
+        .frac-num { border-bottom: 2px solid currentColor; padding: 0 4px 4px 4px; }
+        .frac-den { padding: 4px 4px 0 4px; }
+
+        /* Input Styling Specifics */
+        .fraction-input-container {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+        
+        .input-num, .input-den {
+            width: 80px;
+            padding: 8px;
+            font-size: 1.2rem;
+            text-align: center;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .input-num {
+            border-bottom: none;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-divider {
+            width: 80px;
+            height: 3px;
+            background-color: var(--text-main);
+        }
+
+        .input-den {
+            border-top: none;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .fraction-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--border); color: var(--text-main); }
+
+        /* Grid Styles */
+        .grid-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        #hundred-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            border: 1px solid var(--partition-line);
+            aspect-ratio: 1/1;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .square {
+            position: relative;
+            box-sizing: border-box;
+            border: 0px solid transparent; 
+        }
+
+        /* 10x10 Grid Toggle Lines */
+        .grid-lines-on .square {
+            outline: 0.5px solid var(--grid-line);
+            outline-offset: -0.5px;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-light);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 15px 0 5px 0;
+        }
+
+        /* Result String Display */
+        .conversion-display {
+            width: 100%;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        /* Steps Panel */
+        .steps-panel { grid-column: 1 / -1; }
+        .method-box {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .step {
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+        }
+        .step::before { content: "→"; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
+
+        .error-msg { color: var(--error); font-size: 0.9rem; margin-bottom: 10px; }
+
+        #grid-stats {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            font-size: 0.9rem;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .math-symbol { margin: 0 10px; font-size: 1.4rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Fraction Visualizer</h1>
+        <p>Divide the grid into equal parts based on your denominator to explore percentages.</p>
+        
+        <div class="input-group">
+            <div class="fraction-input-wrap">
+                <div class="fraction-input-container">
+                    <input type="number" id="num" value="1" min="0" max="100" class="input-num" aria-label="Numerator">
+                    <div class="input-divider"></div>
+                    <input type="number" id="den" value="4" min="1" max="100" class="input-den" aria-label="Denominator">
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="process()">Convert</button>
+                    <button class="btn-secondary" onclick="resetForm()">Reset</button>
+                </div>
+            </div>
+            <div id="error-display" class="error-msg"></div>
+        </div>
+    </div>
+
+    <div class="card" style="display: flex; flex-direction: column; align-items: center;">
+        <!-- 1. Grid -->
+        <div class="grid-container">
+            <div id="hundred-grid" class="grid-lines-off"></div>
+        </div>
+
+        <!-- 2. Toggle -->
+        <label class="toggle-container">
+            <input type="checkbox" id="grid-toggle" onchange="process()"> 
+            Show 100-Grid
+        </label>
+
+        <!-- 3. Visual Explanation -->
+        <div id="grid-stats"></div>
+
+        <!-- 4. Conversion Result -->
+        <div id="conversion-result" class="conversion-display"></div>
+    </div>
+
+    <div class="card steps-panel">
+        <h2>Mathematical Conversion</h2>
+        <div id="steps-content"></div>
+    </div>
+</div>
+
+<script>
+    const grid = document.getElementById('hundred-grid');
+    const numInput = document.getElementById('num');
+    const denInput = document.getElementById('den');
+    const errorDisplay = document.getElementById('error-display');
+    const stepsContent = document.getElementById('steps-content');
+    const gridToggle = document.getElementById('grid-toggle');
+    const conversionResult = document.getElementById('conversion-result');
+
+    function createGrid() {
+        grid.innerHTML = '';
+        for (let i = 0; i < 100; i++) {
+            const square = document.createElement('div');
+            square.classList.add('square');
+            grid.appendChild(square);
+        }
+    }
+
+    function getFracHTML(n, d) {
+        return `<div class="math-frac"><div class="frac-num">${n}</div><div class="frac-den">${d}</div></div>`;
+    }
+
+    function process() {
+        const n = parseInt(numInput.value);
+        const d = parseInt(denInput.value);
+
+        if (!validate(n, d)) return;
+
+        const isGridLinesOn = gridToggle.checked;
+        grid.className = isGridLinesOn ? 'grid-lines-on' : 'grid-lines-off';
+
+        const decimal = n / d;
+        const percent = decimal * 100;
+        const sqPerPart = 100 / d;
+        const equivalentNum = (n * (100 / d)).toFixed(2).replace(/\.?0+$/, '');
+
+        updateGridSubdivision(n, d, sqPerPart);
+        
+        conversionResult.innerHTML = `
+            ${getFracHTML(n, d)} 
+            <span class="math-symbol">=</span> 
+            ${getFracHTML(equivalentNum, 100)} 
+            <span class="math-symbol">=</span> 
+            <span>${decimal.toFixed(4).replace(/\.?0+$/, '')}</span> 
+            <span class="math-symbol">=</span> 
+            <span>${percent.toFixed(2).replace(/\.?0+$/, '')}%</span>
+        `;
+
+        updateLabels(n, d, sqPerPart);
+        updateSteps(n, d, decimal, percent);
+    }
+
+    function validate(n, d) {
+        errorDisplay.innerText = "";
+        if (isNaN(n) || isNaN(d)) { errorDisplay.innerText = "Enter valid numbers."; return false; }
+        if (d <= 0) { errorDisplay.innerText = "Denominator must be > 0."; return false; }
+        if (n > 100 || d > 100) { errorDisplay.innerText = "Max input is 100."; return false; }
+        return true;
+    }
+
+    function updateGridSubdivision(n, d, sqPerPart) {
+        const squares = document.querySelectorAll('.square');
+        const borderStyle = '1px solid var(--partition-line)';
+        
+        squares.forEach((sq, i) => {
+            const partID = Math.floor(i / sqPerPart);
+            const row = Math.floor(i / 10);
+            const col = i % 10;
+
+            if (partID < n) {
+                sq.style.backgroundColor = 'var(--primary)';
+            } else if (partID < d) {
+                sq.style.backgroundColor = 'var(--secondary)';
+            } else {
+                sq.style.backgroundColor = 'transparent';
+            }
+
+            sq.style.borderTop = (row === 0 || Math.floor((i - 10) / sqPerPart) !== partID) && partID < d ? borderStyle : '0px';
+            sq.style.borderBottom = (row === 9 || Math.floor((i + 10) / sqPerPart) !== partID) && partID < d ? borderStyle : '0px';
+            sq.style.borderLeft = (col === 0 || Math.floor((i - 1) / sqPerPart) !== partID) && partID < d ? borderStyle : '0px';
+            sq.style.borderRight = (col === 9 || Math.floor((i + 1) / sqPerPart) !== partID) && partID < d ? borderStyle : '0px';
+        });
+    }
+
+    function updateLabels(n, d, sqPerPart) {
+        const shadedTotal = Math.round(n * sqPerPart);
+        const partText = n === 1 ? 'part is' : 'parts are';
+        const totalPartText = d === 1 ? 'equal part' : 'equal parts';
+        
+        document.getElementById('grid-stats').innerHTML = `
+            <strong>Visual Explanation:</strong><br>
+            • The grid is split into <b>${d}</b> ${totalPartText}.<br>
+            • <b>${n}</b> ${partText} selected.<br>
+            • Total squares covered: <b>${shadedTotal}</b> / 100.
+        `;
+    }
+
+    function updateSteps(n, d, dec, per) {
+        const scaleFactor = (100 / d).toFixed(2).replace(/\.?0+$/, '');
+        const newNum = (n * (100 / d)).toFixed(2).replace(/\.?0+$/, '');
+        
+        let html = `
+            <div class="method-box">
+                <h3>Method 1: Direct Division</h3>
+                <div class="step">Divide numerator by denominator: ${getFracHTML(n, d)} ➔ ${n} ÷ ${d} = <b>${dec.toFixed(4).replace(/\.?0+$/, '')}</b></div>
+                <div class="step">Multiply by 100 to get percentage: ${dec.toFixed(4).replace(/\.?0+$/, '')} × 100 = <b>${per.toFixed(2).replace(/\.?0+$/, '')}%</b></div>
+            </div>
+            <div class="method-box">
+                <h3>Method 2: Equivalent Fraction (Out of 100)</h3>
+                <div class="step">Find the scale factor needed to make the denominator 100: <br> 100 ÷ ${d} = <b>${scaleFactor}</b></div>
+                <div class="step">Multiply both the numerator and the denominator by this factor:
+                    <div style="margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                        <div class="math-frac">
+                            <div class="frac-num">${n} × ${scaleFactor}</div>
+                            <div class="frac-den">${d} × ${scaleFactor}</div>
+                        </div>
+                        <span class="math-symbol">➔</span>
+                        ${getFracHTML(newNum, 100)}
+                    </div>
+                </div>
+                <div class="step">Since it is now "per hundred", the value is <b>${newNum}%</b></div>
+            </div>
+        `;
+        stepsContent.innerHTML = html;
+    }
+
+    function resetForm() {
+        numInput.value = 1;
+        denInput.value = 4;
+        gridToggle.checked = false;
+        process();
+    }
+
+    [numInput, denInput].forEach(input => input.addEventListener('input', process));
+    createGrid();
+    process();
+</script>
+
+</body>
 </html>
