@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fraction Visualizer - Code 9</title>
+    <title>Fraction / Decimal / Percentage - Code 10</title>
     <style>
         :root {
             --primary: #2563eb; /* Color for Numerator */
@@ -73,63 +73,57 @@
             display: inline-flex;
             flex-direction: column;
             align-items: center;
-            gap: 0;
+            gap: 8px; /* Added spacing between numerator/denominator */
         }
         
         .input-num, .input-den {
-            width: 80px;
-            padding: 8px;
-            font-size: 1.2rem;
+            width: 100px; /* Made slightly wider */
+            padding: 10px;
+            font-size: 1.3rem;
             text-align: center;
             border: 2px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             outline: none;
         }
 
-        .input-num {
-            border-bottom: none;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-
         .input-divider {
-            width: 80px;
-            height: 3px;
+            width: 120px; /* Longer dividing line as requested */
+            height: 4px;
             background-color: var(--text-main);
-        }
-
-        .input-den {
-            border-top: none;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
+            border-radius: 2px;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
             margin-bottom: 20px;
+            align-items: center;
         }
 
         .fraction-input-wrap {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
         }
 
         .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         button {
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 24px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
             font-weight: 600;
+            font-size: 1rem;
+            transition: transform 0.1s, opacity 0.2s;
         }
+        button:active { transform: scale(0.98); }
 
         .btn-primary { background: var(--primary); color: white; }
         .btn-secondary { background: var(--border); color: var(--text-main); }
@@ -179,6 +173,7 @@
         /* Result String Display */
         .conversion-display {
             width: 100%;
+            min-height: 80px;
             padding: 15px;
             background: #f1f5f9;
             border-radius: 8px;
@@ -190,6 +185,7 @@
             font-weight: bold;
             flex-wrap: wrap;
             margin-top: 15px;
+            border: 1px dashed var(--border);
         }
 
         /* Steps Panel */
@@ -209,7 +205,7 @@
         }
         .step::before { content: "→"; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
 
-        .error-msg { color: var(--error); font-size: 0.9rem; margin-bottom: 10px; }
+        .error-msg { color: var(--error); font-size: 0.9rem; margin-bottom: 10px; text-align: center;}
 
         #grid-stats {
             background: #f8fafc;
@@ -219,6 +215,7 @@
             font-size: 0.9rem;
             width: 100%;
             margin-top: 10px;
+            min-height: 85px;
         }
 
         .math-symbol { margin: 0 10px; font-size: 1.4rem; }
@@ -228,15 +225,15 @@
 
 <div class="container">
     <div class="card">
-        <h1>Fraction Visualizer</h1>
-        <p>Divide the grid into equal parts based on your denominator to explore percentages.</p>
+        <h1>Fraction / Decimal / Percentage</h1>
+        <p>Let's see how to convert a fraction into decimal and percentage!</p>
         
         <div class="input-group">
             <div class="fraction-input-wrap">
                 <div class="fraction-input-container">
                     <input type="number" id="num" value="1" min="0" max="100" class="input-num" aria-label="Numerator">
                     <div class="input-divider"></div>
-                    <input type="number" id="den" value="4" min="1" max="100" class="input-den" aria-label="Denominator">
+                    <input type="number" id="den" value="1" min="1" max="100" class="input-den" aria-label="Denominator">
                 </div>
                 <div class="btn-group">
                     <button class="btn-primary" onclick="process()">Convert</button>
@@ -255,20 +252,26 @@
 
         <!-- 2. Toggle -->
         <label class="toggle-container">
-            <input type="checkbox" id="grid-toggle" onchange="process()"> 
+            <input type="checkbox" id="grid-toggle" onchange="toggleGridLines()"> 
             Show 100-Grid
         </label>
 
         <!-- 3. Visual Explanation -->
-        <div id="grid-stats"></div>
+        <div id="grid-stats">
+            <p style="text-align: center; color: #94a3b8; margin: 0;">Click "Convert" to see the visual explanation.</p>
+        </div>
 
         <!-- 4. Conversion Result -->
-        <div id="conversion-result" class="conversion-display"></div>
+        <div id="conversion-result" class="conversion-display">
+            <span style="color: #94a3b8;">Waiting for input...</span>
+        </div>
     </div>
 
     <div class="card steps-panel">
         <h2>Mathematical Conversion</h2>
-        <div id="steps-content"></div>
+        <div id="steps-content">
+            <p style="color: #64748b;">Step-by-step conversion will appear here after clicking Convert.</p>
+        </div>
     </div>
 </div>
 
@@ -280,6 +283,7 @@
     const stepsContent = document.getElementById('steps-content');
     const gridToggle = document.getElementById('grid-toggle');
     const conversionResult = document.getElementById('conversion-result');
+    const gridStats = document.getElementById('grid-stats');
 
     function createGrid() {
         grid.innerHTML = '';
@@ -294,14 +298,16 @@
         return `<div class="math-frac"><div class="frac-num">${n}</div><div class="frac-den">${d}</div></div>`;
     }
 
+    /**
+     * Core conversion process triggered ONLY by button click
+     */
     function process() {
         const n = parseInt(numInput.value);
         const d = parseInt(denInput.value);
 
         if (!validate(n, d)) return;
 
-        const isGridLinesOn = gridToggle.checked;
-        grid.className = isGridLinesOn ? 'grid-lines-on' : 'grid-lines-off';
+        toggleGridLines();
 
         const decimal = n / d;
         const percent = decimal * 100;
@@ -324,11 +330,15 @@
         updateSteps(n, d, decimal, percent);
     }
 
+    function toggleGridLines() {
+        grid.className = gridToggle.checked ? 'grid-lines-on' : 'grid-lines-off';
+    }
+
     function validate(n, d) {
         errorDisplay.innerText = "";
         if (isNaN(n) || isNaN(d)) { errorDisplay.innerText = "Enter valid numbers."; return false; }
         if (d <= 0) { errorDisplay.innerText = "Denominator must be > 0."; return false; }
-        if (n > 100 || d > 100) { errorDisplay.innerText = "Max input is 100."; return false; }
+        if (n > 100 || d > 100) { errorDisplay.innerText = "Max input for the grid is 100."; return false; }
         return true;
     }
 
@@ -361,7 +371,7 @@
         const partText = n === 1 ? 'part is' : 'parts are';
         const totalPartText = d === 1 ? 'equal part' : 'equal parts';
         
-        document.getElementById('grid-stats').innerHTML = `
+        gridStats.innerHTML = `
             <strong>Visual Explanation:</strong><br>
             • The grid is split into <b>${d}</b> ${totalPartText}.<br>
             • <b>${n}</b> ${partText} selected.<br>
@@ -400,14 +410,26 @@
 
     function resetForm() {
         numInput.value = 1;
-        denInput.value = 4;
+        denInput.value = 1;
         gridToggle.checked = false;
-        process();
+        errorDisplay.innerText = "";
+        
+        // Clear Grid
+        const squares = document.querySelectorAll('.square');
+        squares.forEach(sq => {
+            sq.style.backgroundColor = 'transparent';
+            sq.style.border = '0px';
+        });
+        grid.className = 'grid-lines-off';
+        
+        // Clear results
+        conversionResult.innerHTML = `<span style="color: #94a3b8;">Waiting for input...</span>`;
+        gridStats.innerHTML = `<p style="text-align: center; color: #94a3b8; margin: 0;">Click "Convert" to see the visual explanation.</p>`;
+        stepsContent.innerHTML = `<p style="color: #64748b;">Step-by-step conversion will appear here after clicking Convert.</p>`;
     }
 
-    [numInput, denInput].forEach(input => input.addEventListener('input', process));
+    // Initial setup
     createGrid();
-    process();
 </script>
 
 </body>
