@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fraction / Decimal / Percentage - Code 14b</title>
+    <title>Fraction / Decimal / Percentage - Code 18b</title>
     <style>
         :root {
-            --primary: #2563eb; /* Color for Numerator */
-            --secondary: #e2e8f0; /* Color for Remaining Parts */
+            --primary: #2563eb; 
+            --secondary: #e2e8f0; 
             --partition-line: #0f172a; 
             --primary-light: #dbeafe;
             --success: #059669;
@@ -16,7 +16,7 @@
             --card-bg: #ffffff;
             --text-main: #1e293b;
             --border: #e2e8f0;
-            --grid-line: #000000; /* Black grid lines */
+            --grid-line: #000000; 
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -87,7 +87,7 @@
         }
 
         .input-divider {
-            width: 140px; /* Long dividing line */
+            width: 140px; 
             height: 4px;
             background-color: var(--text-main);
             border-radius: 2px;
@@ -190,6 +190,11 @@
             min-height: 50px;
         }
 
+        .explanation-text ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
         .conversion-chain {
             width: 100%;
             padding: 12px;
@@ -211,7 +216,6 @@
             color: var(--primary); 
             text-transform: uppercase; 
             font-size: 0.85rem; 
-            letter-spacing: 0.05em;
         }
 
         .math-symbol { margin: 0 5px; font-size: 1.2rem; }
@@ -227,7 +231,6 @@
 <body>
 
 <div class="container">
-    <!-- INPUT CARD -->
     <div class="card">
         <h1>Fraction / Decimal / Percentage</h1>
         <p>Let's see how to convert a fraction into decimal and percentage!</p>
@@ -248,14 +251,11 @@
         </div>
     </div>
 
-    <!-- VISUALIZATION CARD -->
     <div class="card" id="vis-card" style="display: flex; flex-direction: column;">
-        
         <div id="welcome-msg" style="text-align: center; color: #94a3b8; padding: 40px 0;">
             Click "Convert" to see the visualizations.
         </div>
 
-        <!-- DECIMAL SECTION -->
         <div id="decimal-section" class="visual-block hidden">
             <div class="vis-header">1. Decimal Conversion</div>
             <div class="grid-container">
@@ -269,7 +269,6 @@
             <div id="decimal-chain" class="conversion-chain"></div>
         </div>
 
-        <!-- PERCENTAGE SECTION -->
         <div id="percent-section" class="visual-block hidden">
             <div class="vis-header">2. Percentage Conversion</div>
             <div class="grid-container">
@@ -284,7 +283,6 @@
         </div>
     </div>
 
-    <!-- MATH STEPS CARD -->
     <div class="card steps-panel">
         <h2>Mathematical Conversion</h2>
         <div id="steps-content">
@@ -328,7 +326,6 @@
     function process() {
         const n = parseInt(numInput.value);
         const d = parseInt(denInput.value);
-
         if (!validate(n, d)) return;
 
         welcomeMsg.classList.add('hidden');
@@ -336,43 +333,102 @@
 
         const decimal = n / d;
         const percent = decimal * 100;
-        const isDecimalFactor = (d <= 10 && 10 % d === 0);
+        const isScalableTo10 = (10 % d === 0);
+        const isScalableTo100 = (100 % d === 0);
 
-        // Update Decimal Section
-        if (isDecimalFactor) {
+        // DECIMAL SECTION
+        if (isScalableTo10) {
             decimalSection.classList.remove('hidden');
-            const equivTenthNum = (decimal * 10).toFixed(2).replace(/\.?0+$/, '');
+            const equivTenthNum = (decimal * 10).toFixed(0);
             updateTenthsGrid(n, d);
-            const partText = n === 1 ? 'part is' : 'parts are';
             document.getElementById('decimal-explanation').innerHTML = `
-                • Grid split into <b>${d}</b> equal parts. <b>${n}</b> ${partText} selected.<br>
-                • This is equivalent to selecting <b>${equivTenthNum}</b> out of 10 segments.
+                <ul>
+                    <li>The whole is split into <b>${d}</b> equal parts. <b>${n}</b> ${n === 1 ? 'part is' : 'parts are'} shaded.</li>
+                    <li>This is equivalent to shading <b>${equivTenthNum}</b> out of 10 smaller segments.</li>
+                </ul>
             `;
             document.getElementById('decimal-chain').innerHTML = `
                 ${getFracHTML(n, d)} <span class="math-symbol">=</span> 
                 ${getFracHTML(equivTenthNum, 10)} <span class="math-symbol">=</span> 
-                <span>${decimal.toFixed(4).replace(/\.?0+$/, '')}</span>
+                <span>${decimal.toFixed(1)}</span>
             `;
         } else {
             decimalSection.classList.add('hidden');
         }
 
-        // Update Percentage Section
-        const equivHundredNum = (decimal * 100).toFixed(2).replace(/\.?0+$/, '');
+        // PERCENTAGE SECTION
         updateHundredGrid(n, d);
-        const partText = n === 1 ? 'part is' : 'parts are';
+        const shadedCount = Math.round(decimal * 100);
+        const approxWord = isScalableTo100 ? '' : 'approximately ';
         document.getElementById('percent-explanation').innerHTML = `
-            • Grid split into <b>${d}</b> equal parts. <b>${n}</b> ${partText} selected.<br>
-            • This covers exactly <b>${Math.round(decimal * 100)}</b> out of 100 small squares.
-        `;
-        document.getElementById('percent-chain').innerHTML = `
-            ${getFracHTML(n, d)} <span class="math-symbol">=</span> 
-            ${getFracHTML(equivHundredNum, 100)} <span class="math-symbol">=</span> 
-            <span>${percent.toFixed(2).replace(/\.?0+$/, '')}%</span>
+            <ul>
+                <li>The whole is split into <b>${d}</b> equal parts. <b>${n}</b> ${n === 1 ? 'part is' : 'parts are'} shaded.</li>
+                <li>This is equivalent to shading ${approxWord}<b>${shadedCount}</b> out of 100 smaller squares.</li>
+            </ul>
         `;
 
-        updateSteps(n, d, decimal, percent, isDecimalFactor);
+        if (isScalableTo100) {
+            const equivHundredNum = (decimal * 100).toFixed(0);
+            document.getElementById('percent-chain').innerHTML = `
+                ${getFracHTML(n, d)} <span class="math-symbol">=</span> 
+                ${getFracHTML(equivHundredNum, 100)} <span class="math-symbol">=</span> 
+                <span>${percent}%</span>
+            `;
+        } else {
+            document.getElementById('percent-chain').innerHTML = `
+                ${getFracHTML(n, d)} <span class="math-symbol">=</span> 
+                <span>${decimal.toFixed(4).replace(/\.?0+$/, '')}</span> <span class="math-symbol">=</span> 
+                <span>${percent.toFixed(2).replace(/\.?0+$/, '')}%</span>
+            `;
+        }
+
+        updateSteps(n, d, decimal, percent, isScalableTo10, isScalableTo100);
         applyGridToggles();
+    }
+
+    function updateSteps(n, d, dec, per, is10, is100) {
+        let content = '';
+        if (is100) {
+            content = `
+                <div class="method-box">
+                    <h3>Method 1: Direct Division</h3>
+                    <div class="step">Divide numerator by denominator: ${getFracHTML(n, d)} = ${n} ÷ ${d} = <b>${dec.toFixed(4).replace(/\.?0+$/, '')}</b></div>
+                    <div class="step">Multiply by 100 to get percentage: ${dec.toFixed(4).replace(/\.?0+$/, '')} × 100 = <b>${per.toFixed(2).replace(/\.?0+$/, '')}%</b></div>
+                </div>
+                <div class="method-box">
+                    <h3>Method 2: Equivalent Fraction</h3>
+                    ${is10 ? `
+                        <div class="method-subtitle">A) For Decimal (Scale to 10)</div>
+                        <div class="step">Scale factor (10 ÷ ${d}) = <b>${(10/d)}</b></div>
+                        <div class="step">Multiply both parts by <b>${(10/d)}</b>:
+                            <div style="margin:10px 0; display:flex; align-items:center; justify-content:center;">
+                                <div class="math-frac"><div class="frac-num">${n} × ${(10/d)}</div><div class="frac-den">${d} × ${(10/d)}</div></div>
+                                <span class="math-symbol">=</span> ${getFracHTML((n*(10/d)), 10)}
+                            </div>
+                        </div>
+                        <div class="step">Decimal = <b>${dec.toFixed(1)}</b></div>
+                    ` : ''}
+                    <div class="method-subtitle">${is10 ? 'B)' : ''} For Percentage (Scale to 100)</div>
+                    <div class="step">Scale factor (100 ÷ ${d}) = <b>${(100/d)}</b></div>
+                    <div class="step">Multiply both parts by <b>${(100/d)}</b>:
+                        <div style="margin:10px 0; display:flex; align-items:center; justify-content:center;">
+                            <div class="math-frac"><div class="frac-num">${n} × ${(100/d)}</div><div class="frac-den">${d} × ${(100/d)}</div></div>
+                            <span class="math-symbol">=</span> ${getFracHTML((n*(100/d)), 100)}
+                        </div>
+                    </div>
+                    <div class="step">Percentage = <b>${per.toFixed(0)}%</b></div>
+                </div>
+            `;
+        } else {
+            content = `
+                <div class="method-box">
+                    <h3>Method 1: Direct Division</h3>
+                    <div class="step">Divide numerator by denominator: ${getFracHTML(n, d)} = ${n} ÷ ${d} = <b>${dec.toFixed(4)}</b> (correct to 4 decimal place)</div>
+                    <div class="step">Multiply by 100 to get percentage: <b>${dec.toFixed(4)}</b> × 100 = <b>${per.toFixed(2)}%</b> (correct to 2 decimal place)</div>
+                </div>
+            `;
+        }
+        stepsContent.innerHTML = content;
     }
 
     function applyGridToggles() {
@@ -415,64 +471,6 @@
         });
     }
 
-    function updateSteps(n, d, dec, per, isDecimalFactor) {
-        let method2HTML = '';
-        
-        if (isDecimalFactor) {
-            const scale10 = (10 / d).toFixed(2).replace(/\.?0+$/, '');
-            const scale100 = (100 / d).toFixed(2).replace(/\.?0+$/, '');
-            const newNum10 = (n * (10 / d)).toFixed(2).replace(/\.?0+$/, '');
-            const newNum100 = (n * (100 / d)).toFixed(2).replace(/\.?0+$/, '');
-
-            method2HTML = `
-                <div class="method-subtitle">A) For Decimal (Scale to 10)</div>
-                <div class="step">Scale factor (10 ÷ ${d}) = <b>${scale10}</b></div>
-                <div class="step">Multiply both parts by <b>${scale10}</b>:
-                    <div style="margin: 10px 0; display: flex; align-items: center; justify-content: center;">
-                        <div class="math-frac"><div class="frac-num">${n} × ${scale10}</div><div class="frac-den">${d} × ${scale10}</div></div>
-                        <span class="math-symbol">=</span> ${getFracHTML(newNum10, 10)}
-                    </div>
-                </div>
-                <div class="step">Since it is "per ten", the value is <b>${dec.toFixed(4).replace(/\.?0+$/, '')}</b></div>
-
-                <div class="method-subtitle">B) For Percentage (Scale to 100)</div>
-                <div class="step">Scale factor (100 ÷ ${d}) = <b>${scale100}</b></div>
-                <div class="step">Multiply both parts by <b>${scale100}</b>:
-                    <div style="margin: 10px 0; display: flex; align-items: center; justify-content: center;">
-                        <div class="math-frac"><div class="frac-num">${n} × ${scale100}</div><div class="frac-den">${d} × ${scale100}</div></div>
-                        <span class="math-symbol">=</span> ${getFracHTML(newNum100, 100)}
-                    </div>
-                </div>
-                <div class="step">Since it is "per hundred", the value is <b>${per.toFixed(2).replace(/\.?0+$/, '')}%</b></div>
-            `;
-        } else {
-            const scale100 = (100 / d).toFixed(2).replace(/\.?0+$/, '');
-            const newNum100 = (n * (100 / d)).toFixed(2).replace(/\.?0+$/, '');
-            method2HTML = `
-                <div class="step">Scale factor needed to make denominator 100: (100 ÷ ${d}) = <b>${scale100}</b></div>
-                <div class="step">Multiply both top and bottom by <b>${scale100}</b>:
-                    <div style="margin: 15px 0; display: flex; align-items: center; justify-content: center;">
-                        <div class="math-frac"><div class="frac-num">${n} × ${scale100}</div><div class="frac-den">${d} × ${scale100}</div></div>
-                        <span class="math-symbol">=</span> ${getFracHTML(newNum100, 100)}
-                    </div>
-                </div>
-                <div class="step">Fraction over 100 is the percentage = <b>${newNum100}%</b></div>
-            `;
-        }
-
-        stepsContent.innerHTML = `
-            <div class="method-box">
-                <h3>Method 1: Direct Division</h3>
-                <div class="step">Divide numerator by denominator: ${getFracHTML(n, d)} = ${n} ÷ ${d} = <b>${dec.toFixed(4).replace(/\.?0+$/, '')}</b></div>
-                <div class="step">Multiply by 100 to get percentage: ${dec.toFixed(4).replace(/\.?0+$/, '')} × 100 = <b>${per.toFixed(2).replace(/\.?0+$/, '')}%</b></div>
-            </div>
-            <div class="method-box">
-                <h3>Method 2: Equivalent Fraction</h3>
-                ${method2HTML}
-            </div>
-        `;
-    }
-
     function resetForm() {
         numInput.value = 1;
         denInput.value = 1;
@@ -483,7 +481,6 @@
         decimalSection.classList.add('hidden');
         percentSection.classList.add('hidden');
         stepsContent.innerHTML = `<p style="color: #64748b;">Step-by-step conversion details will appear here.</p>`;
-        
         const squares = document.querySelectorAll('.square');
         squares.forEach(sq => { sq.style.backgroundColor = 'transparent'; sq.style.border = '0px'; });
     }
