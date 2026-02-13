@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fraction / Decimal / Percentage - Code 18b</title>
+    <title>Fraction / Decimal / Percentage - Code 19b</title>
     <style>
         :root {
             --primary: #2563eb; 
@@ -335,6 +335,7 @@
         const percent = decimal * 100;
         const isScalableTo10 = (10 % d === 0);
         const isScalableTo100 = (100 % d === 0);
+        const symbol = isScalableTo100 ? '=' : '≈';
 
         // DECIMAL SECTION
         if (isScalableTo10) {
@@ -376,8 +377,8 @@
             `;
         } else {
             document.getElementById('percent-chain').innerHTML = `
-                ${getFracHTML(n, d)} <span class="math-symbol">=</span> 
-                <span>${decimal.toFixed(4).replace(/\.?0+$/, '')}</span> <span class="math-symbol">=</span> 
+                ${getFracHTML(n, d)} <span class="math-symbol">${symbol}</span> 
+                <span>${decimal.toFixed(4).replace(/\.?0+$/, '')}</span> <span class="math-symbol">${symbol}</span> 
                 <span>${percent.toFixed(2).replace(/\.?0+$/, '')}%</span>
             `;
         }
